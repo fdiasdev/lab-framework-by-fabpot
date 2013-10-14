@@ -5,19 +5,28 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 
 $request  = Request::createFromGlobals();
+
+$routes   = include __DIR__.'/../src/app.php';
+
 $context  = new RequestContext;
 $context->fromRequest($request);
-$routes   = include __DIR__.'/../src/app.php';
 $matcher  = new UrlMatcher($routes, $context);
+$resolver = new ControllerResolver;
 
 //var_dump($request->query->all());
 //var_dump($request->getPathInfo());
 
 try {
     $request->attributes->add($matcher->match($request->getPathInfo()));
-    $response = call_user_func($request->attributes->get('_controller'), $request);
+
+    $controller = $resolver->getController($request);
+    $arguments  = $resolver->getArguments($request, $controller);
+
+    $response   = call_user_func_array($controller, $arguments);
+
 } catch (Routing\Exception\ResourceNotFoundException $e) {
     $response = new Response('Not Found', 404);
 } catch (Exception $e) {
