@@ -18,31 +18,9 @@ $routes->add('hello', new Route('hello/{name}', array(
 
 $routes->add('year', new Route('year/{year}', array(
     'year'        => null,
-    '_controller' => 'LeapYearController::indexAction',
+    '_controller' => '\\Calendar\\Controller\\LeapYearController::indexAction',
 )));
 
 $routes->add('bye', new Route('bye'));
 
 return $routes;
-
-
-function is_leap_year($year = null) {
-    if (null === $year) {
-        $year = date('Y');
-    }
-
-    return 0 == $year % 400 || (0 == $year % 4 && 0 != $year % 100);
-}
-
-class LeapYearController
-{
-    public function indexAction($year)
-    {
-        $response = new Response;
-        if (is_leap_year($year))
-            $response->setContent('Its the year');
-        else
-            $response->setContent('No, shit!');
-        return $response;
-    }
-}

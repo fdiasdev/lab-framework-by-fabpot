@@ -7,34 +7,24 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 
+use Simplex\Framework;
+
 $request  = Request::createFromGlobals();
 
 $routes   = include __DIR__.'/../src/app.php';
 
 $context  = new RequestContext;
 $context->fromRequest($request);
+
 $matcher  = new UrlMatcher($routes, $context);
 $resolver = new ControllerResolver;
 
 //var_dump($request->query->all());
 //var_dump($request->getPathInfo());
 
-try {
-    $request->attributes->add($matcher->match($request->getPathInfo()));
-
-    $controller = $resolver->getController($request);
-    $arguments  = $resolver->getArguments($request, $controller);
-
-    $response   = call_user_func_array($controller, $arguments);
-
-} catch (Routing\Exception\ResourceNotFoundException $e) {
-    $response = new Response('Not Found', 404);
-} catch (Exception $e) {
-    $response = new Response('An error occurred:'.$e->getMessage(), 500);
-}
-
+$framework = new Framework($matcher, $resolver);
+$response  = $framework->handle($request);
 $response->send();
-
 
 function render_template($request)
 {
