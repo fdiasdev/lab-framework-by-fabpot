@@ -24,8 +24,8 @@ $matcher  = new UrlMatcher($routes, $context);
 $resolver = new ControllerResolver;
 
 $dispatcher = new EventDispatcher();
-$dispatcher->addListener('response', array(new ContentLengthListener, 'onResponse'), -100 );
-$dispatcher->addListener('response', array(new GoogleListener, 'onResponse') );
+$dispatcher->addSubscriber(new ContentLengthListener);
+$dispatcher->addSubscriber(new GoogleListener);
 
 $framework = new Framework($dispatcher, $matcher, $resolver);
 $response  = $framework->handle($request);
