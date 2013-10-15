@@ -6,8 +6,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 use Simplex\Framework;
+use Simplex\ResponseEvent;
+use Simplex\ContentLengthListener;
+use Simplex\GoogleListener;
 
 $request  = Request::createFromGlobals();
 
@@ -19,10 +23,11 @@ $context->fromRequest($request);
 $matcher  = new UrlMatcher($routes, $context);
 $resolver = new ControllerResolver;
 
-//var_dump($request->query->all());
-//var_dump($request->getPathInfo());
+$dispatcher = new EventDispatcher();
+$dispatcher->addListener('response', array(new ContentLengthListener, 'onResponse'), -100 );
+$dispatcher->addListener('response', array(new GoogleListener, 'onResponse') );
 
-$framework = new Framework($matcher, $resolver);
+$framework = new Framework($dispatcher, $matcher, $resolver);
 $response  = $framework->handle($request);
 $response->send();
 
